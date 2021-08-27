@@ -8,6 +8,7 @@ from sklearn.tree import DecisionTreeClassifier, plot_tree
 
 from tools import load_iris, split_train_test
 
+
 def prior(targets: np.ndarray, classes: list) -> np.ndarray:
     bin = np.zeros(len(classes))
     for i in classes:
@@ -15,6 +16,7 @@ def prior(targets: np.ndarray, classes: list) -> np.ndarray:
             if i == j:
                 bin[i] += 1/len(targets)
     return bin
+
 
 def split_data(
     features: np.ndarray,
@@ -39,9 +41,10 @@ def split_data(
 
     return (np.array(features_1), np.array(targets_1)), (np.array(features_2), np.array(targets_2))
 
+
 def gini_impurity(targets: np.ndarray, classes: list) -> float:
-    dogs = prior(targets,classes)
-    return 0.5*(1-np.sum(np.power(dogs,2)))
+    dogs = prior(targets, classes)
+    return 0.5*(1-np.sum(np.power(dogs, 2)))
 
 
 def weighted_impurity(
@@ -49,8 +52,8 @@ def weighted_impurity(
     t2: np.ndarray,
     classes: list
 ) -> float:
-    g1 = gini_impurity(t1,classes)
-    g2 = gini_impurity(t2,classes)
+    g1 = gini_impurity(t1, classes)
+    g2 = gini_impurity(t2, classes)
     n = t1.shape[0] + t2.shape[0]
     N1 = len(t1)
     N2 = len(t2)
@@ -65,8 +68,10 @@ def total_gini_impurity(
     split_feature_index: int,
     theta: float
 ) -> float:
-    (f_1, t_1), (f_2, t_2) = split_data(features,targets,split_feature_index,theta)
-    return weighted_impurity(t_1,t_2,classes)
+    (f_1, t_1), (f_2, t_2) = split_data(
+        features, targets, split_feature_index, theta)
+    return weighted_impurity(t_1, t_2, classes)
+
 
 def brute_best_split(
     features: np.ndarray,
@@ -78,16 +83,18 @@ def brute_best_split(
     # iterate feature dimensions
     for i in range(features.shape[1]):
         # create the thresholds
-        thetas = np.linspace(np.min(features[:,i]), np.max(features[:,i]), num_tries+2)[1:-1]
+        thetas = np.linspace(np.min(features[:, i]), np.max(
+            features[:, i]), num_tries+2)[1:-1]
 
         # iterate thresholds
         for theta in thetas:
-            total_gini = total_gini_impurity(features, targets, classes, i, theta)
+            total_gini = total_gini_impurity(
+                features, targets, classes, i, theta)
             if total_gini < best_gini:
                 best_gini = total_gini
                 best_dim = i
                 best_theta = theta
-    
+
     return best_gini, best_dim, best_theta
 
 
@@ -107,7 +114,7 @@ class IrisTreeTrainer:
         self.tree = DecisionTreeClassifier()
 
     def train(self):
-        return self.tree.fit(self.train_features,self.train_targets)
+        return self.tree.fit(self.train_features, self.train_targets)
 
     def accuracy(self):
         predict = self.tree.predict(self.test_features)
@@ -117,12 +124,23 @@ class IrisTreeTrainer:
         plot_tree(self.tree)
         fig1 = plt.gcf()
         plt.show()
-        fig1.savefig("2_3_2.png")
+        fig1.savefig("2_3_1.png")
 
     def plot_progress(self):
-        # Independent section
-        # Remove this method if you don't go for independent section.
-        ...
+        s = []
+        n = []
+        for i in range(1, len(self.train_features-1)):
+            self.tree.fit(self.train_features[:i], self.train_targets[:i])
+            y_prediction = self.tree.predict(self.test_features)
+            score = accuracy_score(self.test_targets, y_prediction)
+            s.append(score)
+            n.append(i)
+        fig2 = plt.gcf()
+        plt.plot(n, s)
+        plt.ylabel("Accuracy")
+        plt.xlabel("Number of samples")
+        plt.show()
+        fig2.savefig("bonus_1.png")
 
     def guess(self):
         pred = self.tree.predict(self.test_features)
@@ -130,7 +148,7 @@ class IrisTreeTrainer:
 
     def confusion_matrix(self):
         n = len(self.classes)
-        M = np.zeros((n,n))
+        M = np.zeros((n, n))
 
         guess = self.guess()
         for i in range(len(self.test_targets)):
@@ -138,4 +156,3 @@ class IrisTreeTrainer:
             k = guess[i]
             M[j][k] += 1
         return M
-

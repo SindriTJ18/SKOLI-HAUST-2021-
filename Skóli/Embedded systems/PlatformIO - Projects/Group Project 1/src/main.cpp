@@ -3,23 +3,35 @@
 #include "digital_out.h"
 
 Digital_in C1(1);
-Digital_in C2(2);
+Digital_in C2(3);
 Digital_out LED(5);
-int cnt = 0;
+Digital_out indicator(4);
+int pos = 0;
 int main()
 {
   C1.init();
   C2.init();
+  indicator.init();
   LED.init();
+
+  bool stateInit = C1.is_hi();
   while (1)
   {
-    if (C1.is_hi() == true)
-    {
-      cnt++;
+    if (stateInit == false && C1.is_hi()){
+      indicator.set_hi();
+      _delay_us(10);
+      if(C2.is_hi()){
+        pos++;
+      }
+      else{
+        pos--;
+      }
+      indicator.set_lo();
     }
-    if (cnt > 1400)
-    {
-      LED.set_hi();
+    stateInit = C1.is_hi();
+    if (abs(pos)>700){
+      LED.toggle();
+      pos = 0;
     }
   }
 }

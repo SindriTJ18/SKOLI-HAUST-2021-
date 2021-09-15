@@ -10,9 +10,8 @@ def gen_data(
     mean: np.ndarray,
     var: float
 ) -> np.ndarray:
-    '''Generate n values samples from the k-variate
-    normal distribution
-    '''
+    dogs = 2;
+    print(dogs);
     ...
 
 
